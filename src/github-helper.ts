@@ -47,7 +47,8 @@ export class GitHubHelper {
       options.auth = `${token}`
     }
     if (githubServerHostname !== 'github.com') {
-      options.baseUrl = `https://${githubServerHostname}/api/` + inputs.remoteInstanceApiVersion
+      options.baseUrl =
+        `https://${githubServerHostname}/api/` + inputs.remoteInstanceApiVersion
     } else {
       options.baseUrl = 'https://api.github.com'
     }
@@ -83,7 +84,7 @@ export class GitHubHelper {
         base: inputs.base,
         body: inputs.body,
         draft: inputs.draft.value,
-        maintainer_can_modify: inputs.maintainerCanModify,
+        maintainer_can_modify: inputs.maintainerCanModify
       })
       core.info(
         `Created pull request #${pull.number} (${headBranch} => ${inputs.base})`
