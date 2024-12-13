@@ -52,6 +52,7 @@ export class GitHubHelper {
       options.baseUrl = 'https://api.github.com'
     }
     options.throttle = throttleOptions
+    core.info(`Remote is ${options.baseUrl}`)
     this.octokit = new Octokit(options)
   }
 
@@ -82,7 +83,7 @@ export class GitHubHelper {
         base: inputs.base,
         body: inputs.body,
         draft: inputs.draft.value,
-        maintainer_can_modify: inputs.maintainerCanModify
+        maintainer_can_modify: inputs.maintainerCanModify,
       })
       core.info(
         `Created pull request #${pull.number} (${headBranch} => ${inputs.base})`
