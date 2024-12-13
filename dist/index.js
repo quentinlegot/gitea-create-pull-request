@@ -385,8 +385,8 @@ function createPullRequest(inputs) {
             core.startGroup('Determining the base and head repositories');
             const baseRemote = gitConfigHelper.getGitRemote();
             // Init the GitHub clients
-            const ghBranch = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.branchToken);
-            const ghPull = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.token);
+            const ghBranch = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.branchToken, inputs);
+            const ghPull = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.token, inputs);
             // Determine the head repository; the target for the pull request branch
             const branchRemoteName = inputs.pushToFork ? 'fork' : 'origin';
             const branchRepository = inputs.pushToFork
@@ -1228,18 +1228,20 @@ const ERROR_PR_REVIEW_TOKEN_SCOPE = 'Validation Failed: "Could not resolve to a 
 const ERROR_PR_FORK_COLLAB = `Fork collab can't be granted by someone without permission`;
 const blobCreationLimit = (0, p_limit_1.default)(8);
 class GitHubHelper {
-    constructor(githubServerHostname, token) {
+    constructor(githubServerHostname, token, inputs) {
         const options = {};
         if (token) {
             options.auth = `${token}`;
         }
         if (githubServerHostname !== 'github.com') {
-            options.baseUrl = `https://${githubServerHostname}/api/v3`;
+            options.baseUrl =
+                `https://${githubServerHostname}/api/` + inputs.remoteInstanceApiVersion;
         }
         else {
             options.baseUrl = 'https://api.github.com';
         }
         options.throttle = octokit_client_1.throttleOptions;
+        core.info(`Remote is ${options.baseUrl}`);
         this.octokit = new octokit_client_1.Octokit(options);
     }
     parseRepository(repository) {
@@ -1548,7 +1550,8 @@ function run() {
                 teamReviewers: utils.getInputAsArray('team-reviewers'),
                 milestone: Number(core.getInput('milestone')),
                 draft: getDraftInput(),
-                maintainerCanModify: core.getBooleanInput('maintainer-can-modify')
+                maintainerCanModify: core.getBooleanInput('maintainer-can-modify'),
+                remoteInstanceApiVersion: core.getInput('remote-instance-api-version')
             };
             core.debug(`Inputs: ${(0, util_1.inspect)(inputs)}`);
             if (!inputs.token) {
