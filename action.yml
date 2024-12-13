@@ -82,7 +82,7 @@ inputs:
   maintainer-can-modify:
     description: 'Indicates whether maintainers can modify the pull request.'
     default: true
-  remoteInstanceApiVersion:
+  remote-instance-api-version:
     description: 'Api version used to create the pull request on remote git instance, default to "v3"'
     default: 'v3'
 outputs:
