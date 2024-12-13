@@ -41,17 +41,19 @@ type TreeObject = {
 export class GitHubHelper {
   private octokit: InstanceType<typeof Octokit>
 
-  constructor(githubServerHostname: string, token: string) {
+  constructor(githubServerHostname: string, token: string, inputs: Inputs) {
     const options: OctokitOptions = {}
     if (token) {
       options.auth = `${token}`
     }
     if (githubServerHostname !== 'github.com') {
-      options.baseUrl = `https://${githubServerHostname}/api/v3`
+      options.baseUrl =
+        `https://${githubServerHostname}/api/` + inputs.remoteInstanceApiVersion
     } else {
       options.baseUrl = 'https://api.github.com'
     }
     options.throttle = throttleOptions
+    core.info(`Remote is ${options.baseUrl}`)
     this.octokit = new Octokit(options)
   }
 
