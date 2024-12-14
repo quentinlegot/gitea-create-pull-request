@@ -1,3 +1,44 @@
+# About this fork
+
+This is a fork of https://github.com/peter-evans/create-pull-request which only support github.com and self-hosted github. I have adapted it a little so it can support Gitea as gitea API is similar to Github one.
+
+To make it work on Gitea, you have to do 2 things:
+
+1. Add `remote-instance-api-version: v1` as input
+2. Create a Git token (PAT) with write access to your repository and add it to `token` input as Gitea doesn't support permission change of the default token inside CI yet (https://docs.gitea.com/next/usage/actions/comparison#permissions-and-jobsjob_idpermissions)
+
+Here is an example of what it look like:
+
+```yaml
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: current
+      - run: echo "Hello World" >> example.txt
+      - uses: github.com/quentinlegot/gitea-create-pull-request@c05fb67b080696dcdb2d2b7ea83051ec413f7285 # Change full sha to last commit of this repo if needed
+        with:
+          add-paths: "example.txt" # "*" and "**" are supported
+          commit-message: Update translations
+          committer: Ghost <noreply@altarik.fr>
+          author: ${{ github.actor }} <${{ github.actor }}@altarik.fr>
+          branch: hello
+          base: develop
+          draft: false
+          delete-branch: true
+          title: New modificaitons are available to merge
+          body: example.txt have been updated, feel free to merge this pull request after review.
+          remote-instance-api-version: v1
+          token: ${{ secrets.GIT_TOKEN_PR_WRITE }}
+```
+
+In this job, we edited example.txt, and the job will commit it on a new branch and create a pull request(or update it if already exist) to request a merge on base branch.
+
+# Original README:
+
 # <img width="24" height="24" src="docs/assets/logo.svg"> Create Pull Request
 [![CI](https://github.com/peter-evans/create-pull-request/workflows/CI/badge.svg)](https://github.com/peter-evans/create-pull-request/actions?query=workflow%3ACI)
 [![GitHub Marketplace](https://img.shields.io/badge/Marketplace-Create%20Pull%20Request-blue.svg?colorA=24292e&colorB=0366d6&style=flat&longCache=true&logo=github)](https://github.com/marketplace/actions/create-pull-request)
