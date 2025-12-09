@@ -19,7 +19,7 @@ jobs:
         with:
           node-version: current
       - run: echo "Hello World" >> example.txt
-      - uses: https://github.com/quentinlegot/gitea-create-pull-request@c05fb67b080696dcdb2d2b7ea83051ec413f7285 # Change full sha to last commit of this repo if needed
+      - uses: https://github.com/quentinlegot/gitea-create-pull-request@HEAD # Change full sha to last commit of this repo if needed
         with:
           add-paths: "example.txt" # "*" and "**" are supported
           commit-message: Update translations
