@@ -385,8 +385,8 @@ function createPullRequest(inputs) {
             core.startGroup('Determining the base and head repositories');
             const baseRemote = gitConfigHelper.getGitRemote();
             // Init the GitHub clients
-            const ghBranch = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.branchToken, inputs);
-            const ghPull = new github_helper_1.GitHubHelper(baseRemote.hostname, inputs.token, inputs);
+            const ghBranch = new github_helper_1.GitHubHelper(baseRemote.protocol, baseRemote.hostname, inputs.branchToken, inputs);
+            const ghPull = new github_helper_1.GitHubHelper(baseRemote.protocol, baseRemote.hostname, inputs.token, inputs);
             // Determine the head repository; the target for the pull request branch
             const branchRemoteName = inputs.pushToFork ? 'fork' : 'origin';
             const branchRepository = inputs.pushToFork
@@ -411,7 +411,7 @@ function createPullRequest(inputs) {
             core.endGroup();
             core.info(`Pull request branch target repository set to ${branchRepository}`);
             // Configure auth
-            if (baseRemote.protocol == 'HTTPS') {
+            if (baseRemote.protocol.startsWith('HTTP')) {
                 core.startGroup('Configuring credential for HTTPS authentication');
                 yield gitConfigHelper.configureToken(inputs.branchToken);
                 core.endGroup();
@@ -1069,7 +1069,7 @@ class GitConfigHelper {
         if (httpsMatch) {
             return {
                 hostname: httpsMatch[2],
-                protocol: 'HTTPS',
+                protocol: httpsMatch[1].toUpperCase(),
                 repository: httpsMatch[3]
             };
         }
@@ -1096,7 +1096,8 @@ class GitConfigHelper {
     }
     savePersistedAuth() {
         return __awaiter(this, void 0, void 0, function* () {
-            const serverUrl = new url_1.URL(`https://${this.getGitRemote().hostname}`);
+            const gitRemote = this.getGitRemote();
+            const serverUrl = new url_1.URL(`${gitRemote.protocol}://${gitRemote.hostname}`);
             this.extraheaderConfigKey = `http.${serverUrl.origin}/.extraheader`;
             // Save and unset persisted extraheader credential in git config if it exists
             this.persistedExtraheaderConfigValue = yield this.getAndUnset();
@@ -1228,14 +1229,15 @@ const ERROR_PR_REVIEW_TOKEN_SCOPE = 'Validation Failed: "Could not resolve to a 
 const ERROR_PR_FORK_COLLAB = `Fork collab can't be granted by someone without permission`;
 const blobCreationLimit = (0, p_limit_1.default)(8);
 class GitHubHelper {
-    constructor(githubServerHostname, token, inputs) {
+    constructor(protocol, githubServerHostname, token, inputs) {
         const options = {};
         if (token) {
             options.auth = `${token}`;
         }
         if (githubServerHostname !== 'github.com') {
             options.baseUrl =
-                `https://${githubServerHostname}/api/` + inputs.remoteInstanceApiVersion;
+                `${protocol.toLowerCase()}://${githubServerHostname}/api/` +
+                    inputs.remoteInstanceApiVersion;
         }
         else {
             options.baseUrl = 'https://api.github.com';
@@ -1257,7 +1259,7 @@ class GitHubHelper {
             const headBranch = `${headOwner}:${inputs.branch}`;
             // Try to create the pull request
             try {
-                core.info(`Attempting creation of pull request`);
+                core.info(`Attempting creation of pull request: ${baseRepository}`);
                 const { data: pull } = yield this.octokit.rest.pulls.create(Object.assign(Object.assign({}, this.parseRepository(baseRepository)), { title: inputs.title, head: headBranch, head_repo: headRepository, base: inputs.base, body: inputs.body, draft: inputs.draft.value, maintainer_can_modify: inputs.maintainerCanModify }));
                 core.info(`Created pull request #${pull.number} (${headBranch} => ${inputs.base})`);
                 return {
@@ -1730,8 +1732,8 @@ function getRepoPath(relativePath) {
     return repoPath;
 }
 function getRemoteUrl(protocol, hostname, repository) {
-    return protocol == 'HTTPS'
-        ? `https://${hostname}/${repository}`
+    return (protocol === null || protocol === void 0 ? void 0 : protocol.startsWith('HTTP'))
+        ? `${protocol.toLowerCase()}://${hostname}/${repository}`
         : `git@${hostname}:${repository}.git`;
 }
 function secondsSinceEpoch() {
