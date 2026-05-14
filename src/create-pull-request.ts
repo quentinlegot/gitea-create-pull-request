@@ -58,7 +58,6 @@ export async function createPullRequest(inputs: Inputs): Promise<void> {
       inputs.branchToken,
       inputs
     )
-    core.info(`Base remote hostname: ${baseRemote.hostname}`)
     const ghPull = new GitHubHelper(
       baseRemote.protocol,
       baseRemote.hostname,
