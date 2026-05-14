@@ -46,8 +46,8 @@ export function getRemoteUrl(
   hostname: string,
   repository: string
 ): string {
-  return protocol == 'HTTPS'
-    ? `https://${hostname}/${repository}`
+  return protocol?.startsWith('HTTP')
+    ? `${protocol.toLowerCase()}://${hostname}/${repository}`
     : `git@${hostname}:${repository}.git`
 }
 

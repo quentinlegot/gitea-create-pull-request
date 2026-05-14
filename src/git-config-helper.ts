@@ -87,7 +87,7 @@ export class GitConfigHelper {
     if (httpsMatch) {
       return {
         hostname: httpsMatch[2],
-        protocol: 'HTTPS',
+        protocol: httpsMatch[1].toUpperCase(),
         repository: httpsMatch[3]
       }
     }
@@ -119,7 +119,8 @@ export class GitConfigHelper {
   }
 
   async savePersistedAuth(): Promise<void> {
-    const serverUrl = new URL(`https://${this.getGitRemote().hostname}`)
+    const gitRemote = this.getGitRemote()
+    const serverUrl = new URL(`${gitRemote.protocol}://${gitRemote.hostname}`)
     this.extraheaderConfigKey = `http.${serverUrl.origin}/.extraheader`
     // Save and unset persisted extraheader credential in git config if it exists
     this.persistedExtraheaderConfigValue = await this.getAndUnset()
